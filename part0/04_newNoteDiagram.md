@@ -11,8 +11,6 @@ sequenceDiagram
     server-->>browser: HTTP 302 Redirect to /exampleapp/notes
     deactivate server
 
-    
-    
     Note right of browser: Browser reloads page
     browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/notes
     activate server

@@ -10,14 +10,19 @@ const App = () => {
 
   return (
     <div>
-      <h1>unicafe feedback</h1>
+      <h2>Unicafe feedback</h2>
       <button onClick={() => setGood(good + 1)}>good</button>
       <button onClick={() => setNeutral(neutral + 1)}>neutral</button>
       <button onClick={() => setBad(bad + 1)}>bad</button>
 
-      <p>good: {good} <br />
+      <h2>Statistics</h2>
+      <p>
+        good: {good} <br />
         neutral: {neutral} <br />
-        bad: {bad}
+        bad: {bad} <br />
+        total: {good + neutral + bad} <br />
+        average: {(good - bad) / (good + neutral + bad)}<br />
+        positive: {good * 100 / (good + neutral + bad)}%
       </p>
     </div>
   )

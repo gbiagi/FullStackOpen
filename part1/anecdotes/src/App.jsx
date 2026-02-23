@@ -1,8 +1,5 @@
 import { useState } from 'react'
 
-
-
-
 const App = () => {
   const anecdotes = [
     'If it hurts, do it more often.',
@@ -16,7 +13,6 @@ const App = () => {
   ]
 
   const [selected, setSelected] = useState(0)
-  // const votes = [new Array(anecdotes.length).fill(0), setVotes];
   const [votes, setVotes] = useState(new Array(anecdotes.length).fill(0));
   const mostVoted = votes.indexOf(Math.max(...votes));
   function changeQuote(max) {
@@ -31,7 +27,6 @@ const App = () => {
     setVotes(votesCopy);
     console.log(votesCopy);
   }
-
 
   return (
     <div>

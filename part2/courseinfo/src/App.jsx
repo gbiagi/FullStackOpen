@@ -4,6 +4,7 @@ const Course = ({ course }) => {
     <div>
       <Header course={course.name} />
       <Content parts={course.parts} />
+      <Total parts={course.parts} />
     </div>
   )
 }
@@ -28,8 +29,13 @@ const Part = (props) => (
   </p>
 )
 
-const Total = (props) => <p>Number of exercises {props.total}</p>
-
+const Total = (props) => {
+  const exList = props.parts.map(part => part.exercises)
+  const totalEx = exList.reduce((sum, current) => (sum + current))
+  console.log("total", totalEx)
+  return (
+    <p>Total of {totalEx} exercises</p>)
+}
 const App = () => {
   const course = {
     id: 1,

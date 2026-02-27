@@ -8,6 +8,12 @@ const App = () => {
 
   const addName = (event) => {
     event.preventDefault() // prevents reload
+    const names = persons.map((person) => person.name)
+    if (names.includes(newName)) {
+      console.log("Name repeated")
+      alert(`${newName} is already added to phonebook`)
+      return
+    }
     const newPerson = {
       name: newName
     }

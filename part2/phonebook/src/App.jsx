@@ -2,14 +2,19 @@ import { use, useState } from 'react'
 
 const App = () => {
   const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-1234567' }
+    { name: 'Arto Hellas', number: '040-123456', id: 1 },
+    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
+    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
+    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
   ])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
+  const [search, setNewSearch] = useState('')
+  const names = persons.map((person) => person.name)
+  const filtered = persons.filter(person => person.name.toLowerCase().includes(search.toLowerCase()))
 
   const addPerson = (event) => {
     event.preventDefault() // prevents reload
-    const names = persons.map((person) => person.name)
 
     if (newName === '' || newNumber === '') {
       console.log("Empty fields error")
@@ -24,7 +29,8 @@ const App = () => {
     }
     const newPerson = {
       name: newName,
-      number: newNumber
+      number: newNumber,
+      id: persons[persons.length - 1].id + 1
     }
     setPersons(persons.concat(newPerson))
     setNewName('')
@@ -38,9 +44,18 @@ const App = () => {
     // console.log(event.target.value)
     setNewNumber(event.target.value)
   }
+  const handleSearch = (event) => {
+    setNewSearch(event.target.value)
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
+      <div>
+        Filter shown list <input onChange={handleSearch} value={search} />
+      </div>
+
+      <h2>Add new</h2>
       <form>
         <div>
           name: <input onChange={handleNameChanger} value={newName} />
@@ -53,8 +68,8 @@ const App = () => {
       </form>
       <h2>Numbers</h2>
       <div>
-        {persons.map((person) => (
-          <li key={person.name}>
+        {filtered.map((person) => (
+          <li key={person.id}>
             {person.name} {person.number}
           </li>
         ))}

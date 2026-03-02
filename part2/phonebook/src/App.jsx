@@ -1,20 +1,26 @@
-import { use, useState } from 'react'
+import { use, useEffect, useState } from 'react'
+import axios from 'axios'
 import PersonList from './components/PersonList'
 import AddForm from './components/AddForm'
 import Filter from './components/filter'
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ])
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [search, setNewSearch] = useState('')
   const names = persons.map((person) => person.name)
   const filtered = persons.filter(person => person.name.toLowerCase().includes(search.toLowerCase()))
+
+  useEffect(() => {
+    console.log('Fetching list from server')
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        console.log('List fetched')
+        setPersons(response.data)
+      })
+  }, [])
 
   const addPerson = (event) => {
     event.preventDefault() // prevents reload

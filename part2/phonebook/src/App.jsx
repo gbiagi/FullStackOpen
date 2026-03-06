@@ -3,6 +3,7 @@ import axios from 'axios'
 import PersonList from './components/PersonList'
 import AddForm from './components/AddForm'
 import Filter from './components/filter'
+import personService from './services/persons'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -12,15 +13,12 @@ const App = () => {
   const names = persons.map((person) => person.name)
   const filtered = persons.filter(person => person.name.toLowerCase().includes(search.toLowerCase()))
 
+  // Get list of numbers from server
   useEffect(() => {
     console.log('Fetching list from server')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('List fetched')
-        setPersons(response.data)
-      })
-  }, [])
+    personService.getAll().then((initialPersons) => { setPersons(initialPersons) })
+  }
+    , [])
 
   const addPerson = (event) => {
     event.preventDefault() // prevents reload
@@ -39,11 +37,15 @@ const App = () => {
     const newPerson = {
       name: newName,
       number: newNumber,
-      id: persons[persons.length - 1].id + 1
     }
-    setPersons(persons.concat(newPerson))
-    setNewName('')
-    setNewNumber('')
+
+    personService.create(newPerson).then((returnedPerson) => {
+      console.log('Person: ', returnedPerson)
+      setPersons(persons.concat(returnedPerson))
+      setNewName('')
+      setNewNumber('')
+    })
+
   }
   const handleNameChanger = (event) => {
     // console.log(event.target.value)
@@ -55,6 +57,18 @@ const App = () => {
   }
   const handleSearch = (event) => {
     setNewSearch(event.target.value)
+  }
+
+  const handleDelete = (id) => {
+    const person = persons.find((n) => n.id === id)
+    if (window.confirm(`Delete ${person.name}?`)) {
+      personService.deletePerson(id).then((returnedPerson) =>
+        console.log('Deleted person:', returnedPerson))
+      const updatedPersons = persons.filter((person) => person.id !== id)
+      setPersons(updatedPersons)
+    } else {
+      console.log("Delete action cancelled")
+    }
   }
 
   return (
@@ -69,7 +83,7 @@ const App = () => {
         newNumber={newNumber}
         addPerson={addPerson} />
       <h2>Numbers</h2>
-      <PersonList persons={filtered} />
+      <PersonList persons={filtered} deletePerson={handleDelete} />
     </div>
   )
 }

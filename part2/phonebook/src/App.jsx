@@ -17,8 +17,7 @@ const App = () => {
   useEffect(() => {
     console.log('Fetching list from server')
     personService.getAll().then((initialPersons) => { setPersons(initialPersons) })
-  }
-    , [])
+  }, [])
 
   const addPerson = (event) => {
     event.preventDefault() // prevents reload
@@ -29,9 +28,18 @@ const App = () => {
       return
     }
 
-    if (names.includes(newName)) {
+    if (names.includes(newName.trim())) {
       console.log("Name repeated error")
-      alert(`${newName} is already added to phonebook`)
+      if (window.confirm(`${newName.trim()} is already added to phonebook. Replace old number with a new one?`)) {
+        const oldPerson = persons.find((n) => n.name === newName.trim())
+        const changedPerson = { ...oldPerson, number: newNumber }
+        personService.update(changedPerson.id, changedPerson)
+          .then((returnedPerson) => {
+            setPersons(persons.map((person) => (person.id !== changedPerson.id) ? person : returnedPerson))
+            setNewName('')
+            setNewNumber('')
+          })
+      }
       return
     }
     const newPerson = {

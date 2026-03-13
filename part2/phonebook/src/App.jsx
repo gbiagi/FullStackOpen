@@ -12,6 +12,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [search, setNewSearch] = useState('')
   const [notification, setNotification] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
   const names = persons.map((person) => person.name)
   const filtered = persons.filter(person => person.name.toLowerCase().includes(search.toLowerCase()))
 
@@ -54,6 +55,7 @@ const App = () => {
       number: newNumber,
     }
 
+    // Add person
     personService.create(newPerson).then((returnedPerson) => {
       console.log('Person: ', returnedPerson)
       setPersons(persons.concat(returnedPerson))
@@ -81,8 +83,14 @@ const App = () => {
   const handleDelete = (id) => {
     const person = persons.find((n) => n.id === id)
     if (window.confirm(`Delete ${person.name}?`)) {
-      personService.deletePerson(id).then((returnedPerson) =>
-        console.log('Deleted person:', returnedPerson))
+      personService.deletePerson(id)
+        .then((returnedPerson) => console.log('Deleted person:', returnedPerson))
+        .catch(error => {
+          setErrorMessage(`Information of ${person.name} has already been deleted from server`)
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
+        })
       const updatedPersons = persons.filter((person) => person.id !== id)
       setPersons(updatedPersons)
     } else {
@@ -93,7 +101,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={notification} />
+      <Notification message={notification} error={errorMessage} />
       <Filter handleSearch={handleSearch} search={search} />
       <h2>Add new</h2>
       <AddForm

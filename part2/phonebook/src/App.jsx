@@ -3,6 +3,7 @@ import axios from 'axios'
 import PersonList from './components/PersonList'
 import AddForm from './components/AddForm'
 import Filter from './components/filter'
+import Notification from './components/Notification'
 import personService from './services/persons'
 
 const App = () => {
@@ -10,6 +11,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [search, setNewSearch] = useState('')
+  const [notification, setNotification] = useState(null)
   const names = persons.map((person) => person.name)
   const filtered = persons.filter(person => person.name.toLowerCase().includes(search.toLowerCase()))
 
@@ -28,6 +30,7 @@ const App = () => {
       return
     }
 
+    // check name in list
     if (names.includes(newName.trim())) {
       console.log("Name repeated error")
       if (window.confirm(`${newName.trim()} is already added to phonebook. Replace old number with a new one?`)) {
@@ -38,6 +41,10 @@ const App = () => {
             setPersons(persons.map((person) => (person.id !== changedPerson.id) ? person : returnedPerson))
             setNewName('')
             setNewNumber('')
+            setNotification(`Changed ${returnedPerson.name}'s number`)
+            setTimeout(() => {
+              setNotification(null)
+            }, 5000)
           })
       }
       return
@@ -52,6 +59,10 @@ const App = () => {
       setPersons(persons.concat(returnedPerson))
       setNewName('')
       setNewNumber('')
+      setNotification(`Added ${returnedPerson.name}`)
+      setTimeout(() => {
+        setNotification(null)
+      }, 5000)
     })
 
   }
@@ -82,6 +93,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification} />
       <Filter handleSearch={handleSearch} search={search} />
       <h2>Add new</h2>
       <AddForm

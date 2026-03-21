@@ -31,6 +31,11 @@ let persons = [
     }
 ]
 
+const generateId = () => {
+    const id = Math.floor(Math.random() * 1000)
+    return id.toString()
+}
+
 app.get('/', (request, response) => {
     response.send('<h1>Phonebook Backend in NodeJS</h1>')
 })
@@ -67,6 +72,24 @@ app.delete('/api/persons/:id', (request, response) => {
     console.log(`Deleted person with id ${id}`);
 
     response.status(204).end()
+})
+
+app.post('/api/persons', (request, response) => {
+    const body = request.body
+    if (!body.name || !body.number) {
+        console.log('Error adding person: missing information');
+        return response.status(400).json({ error: 'Missing information' })
+    }
+
+    const person = {
+        "name": body.name,
+        "number": body.number,
+        "id": generateId(),
+    }
+    persons = persons.concat(person)
+    console.log('person id:', person.id, 'list containts now:', persons.length);
+
+    response.json(person)
 })
 
 const PORT = 3001

@@ -31,6 +31,8 @@ let persons = [
     }
 ]
 
+let namesList = persons.map((person) => person.name)
+
 const generateId = () => {
     const id = Math.floor(Math.random() * 1000)
     return id.toString()
@@ -57,19 +59,34 @@ app.get('/api/persons', (request, response) => {
 app.get('/api/persons/:id', (request, response) => {
     const id = request.params.id
     const person = persons.find((person) => person.id === id)
-    response.send(`
+    if (!person) {
+        console.log('Person not found');
+        response.status(404).end()
+    } else {
+        response.send(`
         <p>
         Id: ${person.id} </br>
         Name: ${person.name} </br>
         Number: ${person.number} </br>
         </p>`)
+    }
 })
 
 app.delete('/api/persons/:id', (request, response) => {
     console.log('deleting');
     const id = request.params.id
+    const person = persons.find((person) => person.id === id)
+    if (!person) {
+        console.log('Person not found');
+        return response.status(404).json({ error: 'Person not found' })
+    }
+
+    namesList = namesList.filter((name) => name !== person.name)
     persons = persons.filter((person) => person.id !== id)
+
     console.log(`Deleted person with id ${id}`);
+    console.log('person id:', person.id, 'list containts now:', persons.length);
+    console.log('nameList contains now: ', namesList.length);
 
     response.status(204).end()
 })
@@ -80,6 +97,10 @@ app.post('/api/persons', (request, response) => {
         console.log('Error adding person: missing information');
         return response.status(400).json({ error: 'Missing information' })
     }
+    if (namesList.includes(body.name)) {
+        console.log('Duplicated name error');
+        return response.status(400).json({ error: 'Duplicated name' })
+    }
 
     const person = {
         "name": body.name,
@@ -87,7 +108,9 @@ app.post('/api/persons', (request, response) => {
         "id": generateId(),
     }
     persons = persons.concat(person)
+    namesList.push(body.name)
     console.log('person id:', person.id, 'list containts now:', persons.length);
+    console.log('nameList contains now: ', namesList.length);
 
     response.json(person)
 })

@@ -1,5 +1,4 @@
-import { use, useEffect, useState } from 'react'
-import axios from 'axios'
+import { useEffect, useState } from 'react'
 import PersonList from './components/PersonList'
 import AddForm from './components/AddForm'
 import Filter from './components/filter'

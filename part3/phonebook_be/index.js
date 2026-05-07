@@ -1,5 +1,8 @@
+require('dotenv').config();
+
 const express = require('express')
 var morgan = require('morgan')
+const Person = require('./models/person')
 const app = express()
 
 morgan.token('person', function (req, res) { return JSON.stringify(req.body) })
@@ -8,40 +11,20 @@ app.use(express.json())
 app.use(express.static('dist'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :person'))
 
-let persons = [
-    {
-        "id": "1",
-        "name": "Arto Hellas",
-        "number": "040-123456"
-    },
-    {
-        "id": "2",
-        "name": "Ada Lovelace",
-        "number": "39-44-5323523"
-    },
-    {
-        "id": "3",
-        "name": "Dan Abramov",
-        "number": "12-43-234345"
-    },
-    {
-        "id": "4",
-        "name": "Mary Poppendieck",
-        "number": "39-23-6423122"
-    },
-    {
-        "id": "5",
-        "name": "Mr Deleted",
-        "number": "12122-12-1234"
-    }
-]
-
-let namesList = persons.map((person) => person.name)
-
+let persons = []
+let namesList = []
+Person.find({}).then(result => {
+    result.forEach(person => {
+        persons.push(person.toJSON())
+    })
+    console.log('Phonebook fetched from db');
+    namesList = persons.map((person) => person.name)
+})
 const generateId = () => {
     const id = Math.floor(Math.random() * 1000)
     return id.toString()
 }
+
 
 app.get('/', (request, response) => {
     response.send('<h1>Phonebook Backend in NodeJS</h1>')
@@ -57,6 +40,7 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
+    console.log(persons);
     response.json(persons)
 })
 
@@ -119,7 +103,7 @@ app.post('/api/persons', (request, response) => {
     response.json(person)
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })

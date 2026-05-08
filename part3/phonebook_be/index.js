@@ -13,6 +13,7 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 
 let persons = []
 let namesList = []
+
 Person.find({}).then(result => {
     result.forEach(person => {
         persons.push(person.toJSON())
@@ -20,10 +21,10 @@ Person.find({}).then(result => {
     console.log('Phonebook fetched from db');
     namesList = persons.map((person) => person.name)
 })
-const generateId = () => {
-    const id = Math.floor(Math.random() * 1000)
-    return id.toString()
-}
+// const generateId = () => {
+//     const id = Math.floor(Math.random() * 1000)
+//     return id.toString()
+// }
 
 
 app.get('/', (request, response) => {
@@ -72,6 +73,7 @@ app.delete('/api/persons/:id', (request, response) => {
     namesList = namesList.filter((name) => name !== person.name)
     persons = persons.filter((person) => person.id !== id)
 
+
     console.log(`Deleted person with id ${id}`);
     console.log('person id:', person.id, 'list containts now:', persons.length);
     console.log('nameList contains now: ', namesList.length);
@@ -90,13 +92,28 @@ app.post('/api/persons', (request, response) => {
         return response.status(400).json({ error: 'Duplicated name' })
     }
 
-    const person = {
-        "name": body.name,
-        "number": body.number,
-        "id": generateId(),
-    }
-    persons = persons.concat(person)
-    namesList.push(body.name)
+    // const person = {
+    //     "name": body.name,
+    //     "number": body.number,
+    //     "id": generateId(),
+    // }
+
+    const person = new Person({
+        name: body.name,
+        number: body.number
+    })
+
+    person.save().then(result => {
+        console.log(`added ${result.name} number ${result.number} to phonebook`)
+    })
+
+    Person.find({}).then(result => {
+        result.forEach(person => {
+            persons.push(person.toJSON())
+        })
+        console.log('Phonebook updated from db');
+        namesList = persons.map((person) => person.name)
+    })
     console.log('person id:', person.id, 'list containts now:', persons.length);
     console.log('nameList contains now: ', namesList.length);
 

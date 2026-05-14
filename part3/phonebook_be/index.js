@@ -49,7 +49,7 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-    console.log('persons list lenght:', persons.length);
+    console.log('Person list lenght:', persons.length);
     response.json(persons)
 })
 

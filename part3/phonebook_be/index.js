@@ -13,26 +13,27 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 
 let persons = []
 
-Person.find({}).then(result => {
-    result.forEach(person => {
-        persons.push(person.toJSON())
-    })
-    console.log('Phonebook fetched from db');
-})
-// const generateId = () => {
-//     const id = Math.floor(Math.random() * 1000)
-//     return id.toString()
-// }
+function updateList() {
+    persons = []
+    Person.find({})
+        .then(result => {
+            result.forEach(person => {
+                persons.push(person.toJSON())
+            })
+            console.log('Phonebook fetched from db, list lenght:', persons.length);
+        })
+        .catch(error => next(error))
+}
 
 const errorHandler = (error, request, response, next) => {
     console.error(error.message)
-
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformatted id' })
     }
-
     next(error)
 }
+
+updateList()
 
 app.get('/', (request, response) => {
     response.send('<h1>Phonebook Backend in NodeJS</h1>')
@@ -64,29 +65,35 @@ app.get('/api/persons/:id', (request, response, next) => {
         .catch(error => next(error))
 })
 
+app.put('/api/persons/:id', (request, response, next) => {
+    const { name, number } = request.body
+    Person.findById(request.params.id)
+        .then(person => {
+            if (!person) {
+                return response.status(404).end()
+            }
+            person.name = name
+            person.number = number
+
+            console.log('Changed', name, 'number to:', number);
+            return person.save().then((updatedPerson) => {
+                updateList()
+                response.json(updatedPerson)
+            })
+        })
+        .catch(error => next(error))
+})
+
 app.delete('/api/persons/:id', (request, response, next) => {
     const id = request.params.id
-    console.log('deleting person with id:', id);
-
-    // const person = persons.find((person) => person.id === id)
-    // if (!person) {
-    //     console.log('Person not found');
-    //     return response.status(404).json({ error: 'Person not found' })
-    // }
-
-    // 
-
     Person.findByIdAndDelete(id)
         .then(result => {
-            persons = persons.filter((person) => person.id !== id)
+            updateList()
+            console.log(`Deleted person with id ${id}`);
             response.status(204).end()
         })
         .catch(error => next(error))
 
-    console.log(`Deleted person with id ${id}`);
-    console.log('list containts now:', persons.length);
-
-    response.status(204).end()
 })
 
 app.post('/api/persons', (request, response) => {
@@ -96,19 +103,13 @@ app.post('/api/persons', (request, response) => {
         return response.status(400).json({ error: 'Missing information' })
     }
 
-    // const person = {
-    //     "name": body.name,
-    //     "number": body.number,
-    //     "id": generateId(),
-    // }
-
     const person = new Person({
         name: body.name,
         number: body.number
     })
 
     person.save().then(result => {
-        persons.push(result)
+        updateList()
         console.log(`added ${result.name} number ${result.number} to phonebook, list containts now:`, persons.length)
         response.json(person)
     })

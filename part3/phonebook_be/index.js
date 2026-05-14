@@ -12,20 +12,27 @@ app.use(express.static('dist'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :person'))
 
 let persons = []
-let namesList = []
 
 Person.find({}).then(result => {
     result.forEach(person => {
         persons.push(person.toJSON())
     })
     console.log('Phonebook fetched from db');
-    namesList = persons.map((person) => person.name)
 })
 // const generateId = () => {
 //     const id = Math.floor(Math.random() * 1000)
 //     return id.toString()
 // }
 
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+
+    next(error)
+}
 
 app.get('/', (request, response) => {
     response.send('<h1>Phonebook Backend in NodeJS</h1>')
@@ -41,42 +48,43 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-    console.log(persons);
+    console.log('persons list lenght:', persons.length);
     response.json(persons)
 })
 
-app.get('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    const person = persons.find((person) => person.id === id)
-    if (!person) {
-        console.log('Person not found');
-        response.status(404).end()
-    } else {
-        response.send(`
-        <p>
-        Id: ${person.id} </br>
-        Name: ${person.name} </br>
-        Number: ${person.number} </br>
-        </p>`)
-    }
+app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+        .then(person => {
+            if (person) {
+                response.json(person)
+            } else {
+                response.status(404).end()
+            }
+        })
+        .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
-    console.log('deleting');
+app.delete('/api/persons/:id', (request, response, next) => {
     const id = request.params.id
-    const person = persons.find((person) => person.id === id)
-    if (!person) {
-        console.log('Person not found');
-        return response.status(404).json({ error: 'Person not found' })
-    }
+    console.log('deleting person with id:', id);
 
-    namesList = namesList.filter((name) => name !== person.name)
-    persons = persons.filter((person) => person.id !== id)
+    // const person = persons.find((person) => person.id === id)
+    // if (!person) {
+    //     console.log('Person not found');
+    //     return response.status(404).json({ error: 'Person not found' })
+    // }
 
+    // 
+
+    Person.findByIdAndDelete(id)
+        .then(result => {
+            persons = persons.filter((person) => person.id !== id)
+            response.status(204).end()
+        })
+        .catch(error => next(error))
 
     console.log(`Deleted person with id ${id}`);
-    console.log('person id:', person.id, 'list containts now:', persons.length);
-    console.log('nameList contains now: ', namesList.length);
+    console.log('list containts now:', persons.length);
 
     response.status(204).end()
 })
@@ -86,10 +94,6 @@ app.post('/api/persons', (request, response) => {
     if (!body.name || !body.number) {
         console.log('Error adding person: missing information');
         return response.status(400).json({ error: 'Missing information' })
-    }
-    if (namesList.includes(body.name)) {
-        console.log('Duplicated name error');
-        return response.status(400).json({ error: 'Duplicated name' })
     }
 
     // const person = {
@@ -104,21 +108,13 @@ app.post('/api/persons', (request, response) => {
     })
 
     person.save().then(result => {
-        console.log(`added ${result.name} number ${result.number} to phonebook`)
+        persons.push(result)
+        console.log(`added ${result.name} number ${result.number} to phonebook, list containts now:`, persons.length)
+        response.json(person)
     })
-
-    Person.find({}).then(result => {
-        result.forEach(person => {
-            persons.push(person.toJSON())
-        })
-        console.log('Phonebook updated from db');
-        namesList = persons.map((person) => person.name)
-    })
-    console.log('person id:', person.id, 'list containts now:', persons.length);
-    console.log('nameList contains now: ', namesList.length);
-
-    response.json(person)
 })
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {

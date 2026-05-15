@@ -1,4 +1,5 @@
-require('dotenv').config();
+/* eslint-disable no-unused-vars */
+require('dotenv').config()
 
 const express = require('express')
 var morgan = require('morgan')
@@ -14,34 +15,34 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 let persons = []
 
 function updateList() {
-    persons = []
-    Person.find({})
-        .then(result => {
-            result.forEach(person => {
-                persons.push(person.toJSON())
-            })
-            console.log('Phonebook fetched from db, list lenght:', persons.length);
-        })
-        .catch(error => next(error))
+  persons = []
+  Person.find({})
+    .then(result => {
+      result.forEach(person => {
+        persons.push(person.toJSON())
+      })
+      console.log('Phonebook fetched from db, list lenght:', persons.length)
+    })
+    .catch(error => console.log(error))
 }
 
 const errorHandler = (error, request, response, next) => {
-    console.error(error.message)
-    if (error.name === 'CastError') {
-        return response.status(400).send({ error: 'malformatted id' })
-    }
-    next(error)
+  console.error(error.message)
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+  next(error)
 }
 
 updateList()
 
 app.get('/', (request, response) => {
-    response.send('<h1>Phonebook Backend in NodeJS</h1>')
+  response.send('<h1>Phonebook Backend in NodeJS</h1>')
 })
 
 
 app.get('/info', (request, response) => {
-    response.send(`
+  response.send(`
         <p>
         Phonebook has info for ${persons.length} people </br>
         ${new Date()}
@@ -49,80 +50,80 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-    console.log('Person list lenght:', persons.length);
-    response.json(persons)
+  console.log('Person list lenght:', persons.length)
+  response.json(persons)
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
-    Person.findById(request.params.id)
-        .then(person => {
-            if (person) {
-                response.json(person)
-            } else {
-                response.status(404).end()
-            }
-        })
-        .catch(error => next(error))
+  Person.findById(request.params.id)
+    .then(person => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
-    const { name, number } = request.body
-    Person.findById(request.params.id)
-        .then(person => {
-            if (!person) {
-                return response.status(404).end()
-            }
-            person.name = name
-            person.number = number
+  const { name, number } = request.body
+  Person.findById(request.params.id)
+    .then(person => {
+      if (!person) {
+        return response.status(404).end()
+      }
+      person.name = name
+      person.number = number
 
-            console.log('Changed', name, 'number to:', number);
-            return person.save().then((updatedPerson) => {
-                updateList()
-                response.json(updatedPerson)
-            })
-        })
-        .catch(error => next(error))
+      console.log('Changed', name, 'number to:', number)
+      return person.save().then((updatedPerson) => {
+        updateList()
+        response.json(updatedPerson)
+      })
+    })
+    .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
-    const id = request.params.id
-    Person.findByIdAndDelete(id)
-        .then(result => {
-            updateList()
-            console.log(`Deleted person with id ${id}`);
-            response.status(204).end()
-        })
-        .catch(error => next(error))
+  const id = request.params.id
+  Person.findByIdAndDelete(id)
+    .then(result => {
+      updateList()
+      console.log(`Deleted person with id ${id}`)
+      response.status(204).end()
+    })
+    .catch(error => next(error))
 
 })
 
 app.post('/api/persons', (request, response) => {
-    const body = request.body
-    if (!body.name || !body.number) {
-        console.log('Error adding person: missing information');
-        return response.status(400).json({ error: 'Missing information' })
-    }
+  const body = request.body
+  if (!body.name || !body.number) {
+    console.log('Error adding person: missing information')
+    return response.status(400).json({ error: 'Missing information' })
+  }
 
-    if (body.name.length < 3) {
-        console.log('Error adding person: name must be at least 3 characters long');
-        return response.status(400).json({ error: 'Name must be at least 3 characters long' })
-    }
+  if (body.name.length < 3) {
+    console.log('Error adding person: name must be at least 3 characters long')
+    return response.status(400).json({ error: 'Name must be at least 3 characters long' })
+  }
 
-    const person = new Person({
-        name: body.name,
-        number: body.number
+  const person = new Person({
+    name: body.name,
+    number: body.number
+  })
+
+  person.save()
+    .then(result => {
+      updateList()
+      console.log(`added ${result.name} number ${result.number} to phonebook, list contains now:`, persons.length)
+      response.json(person)
     })
-
-    person.save()
-        .then(result => {
-            updateList()
-            console.log(`added ${result.name} number ${result.number} to phonebook, list contains now:`, persons.length)
-            response.json(person)
-        })
-        .catch(error => {
-            console.log('Validation error', error.message);
-            return response.status(400).json({ error: error.message })
-        })
+    .catch(error => {
+      console.log('Validation error', error.message)
+      return response.status(400).json({ error: error.message })
+    })
 
 })
 
@@ -130,5 +131,5 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })

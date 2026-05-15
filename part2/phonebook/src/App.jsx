@@ -70,7 +70,7 @@ const App = () => {
       .catch(error => {
         console.log('Error adding person')
         console.log(error.response.data.error)
-        setErrorMessage('Error adding person: Name must contain at least 3 characters')
+        setErrorMessage(`${error.response.data.error}`)
         setTimeout(() => {
           setErrorMessage(null)
         }, 5000)

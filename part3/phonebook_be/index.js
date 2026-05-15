@@ -113,11 +113,17 @@ app.post('/api/persons', (request, response) => {
         number: body.number
     })
 
-    person.save().then(result => {
-        updateList()
-        console.log(`added ${result.name} number ${result.number} to phonebook, list containts now:`, persons.length)
-        response.json(person)
-    })
+    person.save()
+        .then(result => {
+            updateList()
+            console.log(`added ${result.name} number ${result.number} to phonebook, list contains now:`, persons.length)
+            response.json(person)
+        })
+        .catch(error => {
+            console.log('Validation error', error.message);
+            return response.status(400).json({ error: error.message })
+        })
+
 })
 
 app.use(errorHandler)

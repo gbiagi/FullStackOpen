@@ -46,8 +46,9 @@ const App = () => {
               setNotification(null)
             }, 5000)
           })
+      } else {
+        return
       }
-      return
     }
     const newPerson = {
       name: newName,
@@ -55,16 +56,25 @@ const App = () => {
     }
 
     // Add person
-    personService.create(newPerson).then((returnedPerson) => {
-      console.log('Person: ', returnedPerson)
-      setPersons(persons.concat(returnedPerson))
-      setNewName('')
-      setNewNumber('')
-      setNotification(`Added ${returnedPerson.name}`)
-      setTimeout(() => {
-        setNotification(null)
-      }, 5000)
-    })
+    personService.create(newPerson).
+      then((returnedPerson) => {
+        console.log('Person: ', returnedPerson)
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewNumber('')
+        setNotification(`Added ${returnedPerson.name}`)
+        setTimeout(() => {
+          setNotification(null)
+        }, 5000)
+      })
+      .catch(error => {
+        console.log('Error adding person')
+        console.log(error.response.data.error)
+        setErrorMessage('Error adding person: Name must contain at least 3 characters')
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+      })
 
   }
   const handleNameChanger = (event) => {
